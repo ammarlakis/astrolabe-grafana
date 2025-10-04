@@ -3,8 +3,7 @@
  * Handles collapsible resources (ReplicaSet, Pod, ConfigMap, etc.)
  */
 
-import { Kind } from '../constants';
-import { K8sResource, K8sEdge, ResourceAttachments, ExpansionState } from '../types';
+import { K8sResource, K8sEdge, ResourceAttachments, ExpansionState, Kind } from '../types';
 
 /**
  * Compute attachments for a given resource

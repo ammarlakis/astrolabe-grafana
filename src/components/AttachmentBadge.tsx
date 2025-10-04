@@ -7,7 +7,7 @@ import React from 'react';
 import { css, cx } from '@emotion/css';
 import { Icon, useStyles2, Tooltip } from '@grafana/ui';
 import { getResourceIcon } from 'utils/resourceIcons';
-import { Kind } from '../constants';
+import { Kind } from '../types';
 
 interface AttachmentBadgeProps {
   kind: Kind;

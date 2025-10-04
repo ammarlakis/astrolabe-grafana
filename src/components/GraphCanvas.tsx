@@ -19,10 +19,9 @@ import 'reactflow/dist/style.css';
 import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
-import { K8sResource, K8sEdge, ResourceAttachments, ExpansionState } from '../types';
+import { K8sResource, K8sEdge, ResourceAttachments, ExpansionState, Kind } from '../types';
 import { GraphNode } from './GraphNode';
 import { getLaneLayoutedElements } from '../lib/laneLayout';
-import { Kind } from '../constants';
 
 interface GraphCanvasProps {
   resources: K8sResource[];

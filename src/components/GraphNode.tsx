@@ -8,12 +8,11 @@ import { Handle, Position } from 'reactflow';
 import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, useStyles2, Tooltip } from '@grafana/ui';
-import { K8sResource, ResourceAttachments } from '../types';
+import { K8sResource, ResourceAttachments, Kind } from '../types';
 import { getStatusColors, ResourceStatus } from '../utils/statusColors';
 import { getResourceIcon } from '../utils/resourceIcons';
 import { hasStatus } from '../utils/resourceTypes';
 import { AttachmentBadge } from './AttachmentBadge';
-import { Kind } from '../constants';
 
 interface GraphNodeProps {
   data: {

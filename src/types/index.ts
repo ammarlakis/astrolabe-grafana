@@ -2,11 +2,56 @@
  * Core types for Astrolabe Kubernetes App Plugin
  */
 
-import { Kind } from "../constants";
+export enum Kind {
+  Deployment = 'Deployment',
+  StatefulSet = 'StatefulSet',
+  ReplicaSet = 'ReplicaSet',
+  NetworkPolicy = 'NetworkPolicy',
+  EndpointSlice = 'EndpointSlice',
+  Endpoints = 'Endpoints',
+  Role = 'Role',
+  RoleBinding = 'RoleBinding',
+  ClusterRole = 'ClusterRole',
+  ClusterRoleBinding = 'ClusterRoleBinding',
+  HorizontalPodAutoscaler = 'HorizontalPodAutoscaler',
+  DaemonSet = 'DaemonSet',
+  Job = 'Job',
+  CronJob = 'CronJob',
+  Pod = 'Pod',
+  Service = 'Service',
+  Ingress = 'Ingress',
+  ConfigMap = 'ConfigMap',
+  Secret = 'Secret',
+  ServiceAccount = 'ServiceAccount',
+  PersistentVolumeClaim = 'PersistentVolumeClaim',
+  PersistentVolume = 'PersistentVolume',
+  StorageClass = 'StorageClass',
+}
 
-export type ViewScope = 'cluster' | 'namespace' | 'release';
-export type ResourceStatus = 'Ready' | 'Pending' | 'Error' | 'Unknown';
-export type EdgeType = 'owner' | 'selects' | 'backs' | 'ref' | 'scales' | 'routes' | 'binds' | 'mounts' | 'uses';
+export enum ViewScope {
+  Cluster = 'cluster',
+  Namespace = 'namespace',
+  Release = 'release'
+};
+
+export enum ResourceStatus {
+  Ready = 'Ready',
+  Pending = 'Pending',
+  Error = 'Error',
+  Unknown = 'Unknown'
+};
+
+export enum EdgeType {
+  Owner = 'owner',
+  Selects = 'selects',
+  Backs = 'backs',
+  Ref = 'ref',
+  Scales = 'scales',
+  Routes = 'routes',
+  Binds = 'binds',
+  Mounts = 'mounts',
+  Uses = 'uses'
+};
 
 /**
  * Kubernetes resource representation

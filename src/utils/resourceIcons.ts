@@ -1,4 +1,4 @@
-import { Kind } from "../constants";
+import { Kind } from "../types";
 
 /**
  * Maps Kubernetes resource kinds to icon names

@@ -135,7 +135,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           onChange={(e) => handleFilterChange('showProblemsOnly', e.currentTarget.checked)}
         />
 
-        {viewScope !== 'cluster' && (
+        {viewScope === ViewScope.Release && (
           <Checkbox
             label="Show cluster-scoped"
             value={filters.showClusterScoped}

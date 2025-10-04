@@ -10,9 +10,8 @@ import { useStyles2, LoadingPlaceholder } from '@grafana/ui';
 import { GraphCanvas } from '../components/GraphCanvas';
 import { FilterBar } from '../components/FilterBar';
 import { createIndexerClient } from '../lib/indexerClient';
-import { K8sResource, K8sEdge, FilterState, ViewScope, ExpansionState } from '../types';
+import { K8sResource, K8sEdge, FilterState, ViewScope, ExpansionState, Kind } from '../types';
 import { computeAllAttachments, filterVisibleResources, simplifyEdges } from '../lib/attachments';
-import { Kind } from '../constants';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   container: css`
@@ -38,7 +37,7 @@ export default function Explorer() {
   const [error, setError] = useState<string | null>(null);
   const [resources, setResources] = useState<K8sResource[]>([]);
   const [edges, setEdges] = useState<K8sEdge[]>([]);
-  const [viewScope, setViewScope] = useState<ViewScope>('cluster');
+  const [viewScope, setViewScope] = useState<ViewScope>(ViewScope.Cluster);
   const [namespaces, setNamespaces] = useState<string[]>([]);
   const [releases, setReleases] = useState<string[]>([]);
   const [selectedNamespace, setSelectedNamespace] = useState<string>('');
@@ -202,7 +201,10 @@ export default function Explorer() {
   }, [resources]);
 
   const namespaceOptions = React.useMemo(() => {
-    return namespaces.map((ns) => ({ label: ns, value: ns }));
+    return [
+      { label: 'All Namespaces', value: '' },
+      ...namespaces.map((ns) => ({ label: ns, value: ns }))
+    ];
   }, [namespaces]);
 
   const releaseOptions = React.useMemo(() => {

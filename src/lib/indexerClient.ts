@@ -164,26 +164,26 @@ export class IndexerClient {
   private mapEdgeType(serverType: string): EdgeType {
     const mapping: Record<string, EdgeType> = {
       // Server's actual edge types
-      'owns': 'owner',
-      'uses-configmap': 'uses',
-      'uses-secret': 'uses',
-      'uses-sa': 'uses',
-      'mounts': 'mounts',
-      'endpoints': 'selects',
-      'selects': 'selects',
-      'backs': 'backs',
-      'routes-to': 'backs',
-      'routes': 'backs',
+      'owns': EdgeType.Owner,
+      'uses-configmap': EdgeType.Uses,
+      'uses-secret': EdgeType.Uses,
+      'uses-sa': EdgeType.Uses,
+      'mounts': EdgeType.Mounts,
+      'endpoints': EdgeType.Selects,
+      'selects': EdgeType.Selects,
+      'backs': EdgeType.Backs,
+      'routes-to': EdgeType.Backs,
+      'routes': EdgeType.Backs,
       // Legacy mappings (in case server changes)
-      'ownership': 'owner',
-      'service-selector': 'selects',
-      'ingress-backend': 'backs',
-      'pod-volume': 'mounts',
-      'configmap-ref': 'uses',
-      'secret-ref': 'uses',
-      'service-account': 'uses',
+      'ownership': EdgeType.Owner,
+      'service-selector': EdgeType.Selects,
+      'ingress-backend': EdgeType.Backs,
+      'pod-volume': EdgeType.Mounts,
+      'configmap-ref': EdgeType.Uses,
+      'secret-ref': EdgeType.Uses,
+      'service-account': EdgeType.Uses,
     };
-    return mapping[serverType] || 'ref';
+    return mapping[serverType] || EdgeType.Ref;
   }
 
 }

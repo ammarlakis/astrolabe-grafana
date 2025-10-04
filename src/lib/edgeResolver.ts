@@ -3,7 +3,7 @@
  * Adapted from ResourceTree.tsx relationship logic
  */
 
-import { K8sResource, K8sEdge } from '../types';
+import { K8sResource, K8sEdge, EdgeType, Kind } from '../types';
 
 /**
  * Build all edges for a set of resources
@@ -29,7 +29,7 @@ export function buildEdges(resources: K8sResource[]): K8sEdge[] {
           edges.push({
             from: ownerResource.uid,
             to: resource.uid,
-            type: 'owner',
+            type: EdgeType.Owner,
           });
         }
       });
@@ -46,7 +46,7 @@ export function buildEdges(resources: K8sResource[]): K8sEdge[] {
           edges.push({
             from: resource.uid,
             to: r.uid,
-            type: 'selects',
+            type: EdgeType.Selects,
           });
         }
       });
@@ -62,7 +62,7 @@ export function buildEdges(resources: K8sResource[]): K8sEdge[] {
           edges.push({
             from: resource.uid,
             to: pod.uid,
-            type: 'selects',
+            type: EdgeType.Selects,
           });
         }
       });
@@ -75,7 +75,7 @@ export function buildEdges(resources: K8sResource[]): K8sEdge[] {
           edges.push({
             from: resource.uid,
             to: r.uid,
-            type: 'backs',
+            type: EdgeType.Backs,
           });
         }
       });
@@ -90,7 +90,7 @@ export function buildEdges(resources: K8sResource[]): K8sEdge[] {
         edges.push({
           from: resource.uid,
           to: pv.uid,
-          type: 'ref',
+          type: EdgeType.Ref,
         });
       }
     }
@@ -107,7 +107,7 @@ export function buildEdges(resources: K8sResource[]): K8sEdge[] {
         edges.push({
           from: pvc.uid,
           to: resource.uid,
-          type: 'ref',
+          type: EdgeType.Ref,
         });
       }
     }
@@ -122,7 +122,7 @@ export function buildEdges(resources: K8sResource[]): K8sEdge[] {
           edges.push({
             from: resource.uid,
             to: pvc.uid,
-            type: 'mounts',
+            type: EdgeType.Mounts,
           });
         }
       });
@@ -140,7 +140,7 @@ export function buildEdges(resources: K8sResource[]): K8sEdge[] {
             edges.push({
               from: resource.uid,
               to: cm.uid,
-              type: 'uses',
+              type: EdgeType.Uses,
             });
           }
         });
@@ -156,7 +156,7 @@ export function buildEdges(resources: K8sResource[]): K8sEdge[] {
             edges.push({
               from: resource.uid,
               to: secret.uid,
-              type: 'uses',
+              type: EdgeType.Uses,
             });
           }
         });
@@ -166,7 +166,7 @@ export function buildEdges(resources: K8sResource[]): K8sEdge[] {
       if (resource.serviceAccountName) {
         const sa = Array.from(nodeMap.values()).find(
           (r) =>
-            r.kind === 'ServiceAccount' &&
+            r.kind === Kind.ServiceAccount &&
             r.name === resource.serviceAccountName &&
             r.namespace === resource.namespace
         );
@@ -174,7 +174,7 @@ export function buildEdges(resources: K8sResource[]): K8sEdge[] {
           edges.push({
             from: resource.uid,
             to: sa.uid,
-            type: 'uses',
+            type: EdgeType.Uses,
           });
         }
       }
@@ -186,13 +186,13 @@ export function buildEdges(resources: K8sResource[]): K8sEdge[] {
       // For now, match by namespace
       resources.forEach((r) => {
         if (
-          ['Deployment', 'StatefulSet', 'ReplicaSet'].includes(r.kind) &&
+          [Kind.Deployment, Kind.StatefulSet, Kind.ReplicaSet].includes(r.kind) &&
           r.namespace === resource.namespace
         ) {
           edges.push({
             from: resource.uid,
             to: r.uid,
-            type: 'scales',
+            type: EdgeType.Scales,
           });
         }
       });
