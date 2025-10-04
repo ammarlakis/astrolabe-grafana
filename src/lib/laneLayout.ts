@@ -4,7 +4,7 @@
  * with attachments (ConfigMap, Secret, PVC, etc.) as side-bands
  */
 
-import { Node, Edge } from 'reactflow';
+import { Node, Edge } from '@xyflow/react';
 import { K8sResource } from '../types';
 
 // Lane definitions (left to right)

@@ -4,7 +4,8 @@
  */
 
 import React, { useMemo } from 'react';
-import ReactFlow, {
+import {
+  ReactFlow,
   Node,
   Edge,
   Controls,
@@ -12,16 +13,16 @@ import ReactFlow, {
   MiniMap,
   useNodesState,
   useEdgesState,
-  ConnectionLineType,
   MarkerType,
-} from 'reactflow';
-import 'reactflow/dist/style.css';
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
 import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { K8sResource, K8sEdge, ResourceAttachments, ExpansionState, Kind } from '../types';
 import { GraphNode } from './GraphNode';
 import { getLaneLayoutedElements } from '../lib/laneLayout';
+import { SmartBezierEdge } from '@tisoap/react-flow-smart-edge';
 
 interface GraphCanvasProps {
   resources: K8sResource[];
@@ -39,8 +40,12 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
 });
 
-export const GraphCanvas: React.FC<GraphCanvasProps> = ({ 
-  resources, 
+const edgeTypes = {
+  smartBezier: SmartBezierEdge,   // smooth, curved, obstacle-avoiding
+};
+
+export const GraphCanvas: React.FC<GraphCanvasProps> = ({
+  resources,
   edges: k8sEdges,
   attachmentsMap,
   expansionState,
@@ -57,7 +62,7 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
         id: resource.uid,
         type: 'resource',
         position: { x: 0, y: 0 }, // Will be set by layout
-        data: { 
+        data: {
           resource,
           attachments,
           expandedAttachments: expansionState.get(resource.uid),
@@ -80,34 +85,42 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
       }
       return valid;
     });
-    
+
     return validEdges.map((edge, idx) => {
       // Network traffic edges should be animated (ingress → service → endpoints → pods)
       const isNetworkTraffic = edge.type === 'selects' || edge.type === 'backs';
       // Ownership edges should be solid, not animated
       const isOwnership = edge.type === 'owner';
-      
+
+      const edgeColor = isOwnership ? '#4a90e2' : isNetworkTraffic ? '#52c41a' : '#888';
+
       return {
         id: `${edge.from}-${edge.to}-${idx}`,
         source: edge.from,
         target: edge.to,
-        type: 'smoothstep',
         animated: isNetworkTraffic,
         label: edge.type,
-        style: { 
-          stroke: isOwnership ? '#4a90e2' : isNetworkTraffic ? '#52c41a' : '#888',
+        style: {
+          stroke: edgeColor,
           strokeWidth: isOwnership ? 2 : 1.5,
         },
         markerEnd: {
           type: MarkerType.ArrowClosed,
-          color: isOwnership ? '#4a90e2' : isNetworkTraffic ? '#52c41a' : '#888',
+          color: edgeColor,
+        },
+        // Smart edge options
+        data: {
+          options: {
+            drawEdge: true,
+            nodePadding: 10,
+          },
         },
       };
     });
   }, [k8sEdges, resources]);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
   // Apply layout asynchronously
   React.useEffect(() => {
@@ -145,7 +158,7 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         nodeTypes={nodeTypes}
-        connectionLineType={ConnectionLineType.Straight}
+        edgeTypes={edgeTypes}
         nodesDraggable={false}
         nodesConnectable={false}
         proOptions={{
@@ -157,7 +170,7 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
         minZoom={0.1}
         maxZoom={2}
         defaultEdgeOptions={{
-          type: ConnectionLineType.Straight,
+          type: 'smartBezier',
         }}
       >
         <Background />

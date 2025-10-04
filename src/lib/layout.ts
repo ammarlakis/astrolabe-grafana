@@ -4,7 +4,7 @@
  */
 
 import ELK from 'elkjs/lib/elk.bundled.js';
-import { Node, Edge } from 'reactflow';
+import { Node, Edge } from '@xyflow/react';
 
 const elk = new ELK();
 
