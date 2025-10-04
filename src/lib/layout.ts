@@ -10,9 +10,14 @@ const elk = new ELK();
 
 const elkOptions = {
   'elk.algorithm': 'layered',
-  'elk.layered.spacing.nodeNodeBetweenLayers': '100',
-  'elk.spacing.nodeNode': '80',
   'elk.direction': 'RIGHT',
+  'elk.layered.spacing.nodeNodeBetweenLayers': '150',  // More space between layers
+  'elk.spacing.nodeNode': '100',  // More space between nodes
+  'elk.layered.spacing.edgeNodeBetweenLayers': '80',  // Space for edges
+  'elk.spacing.edgeEdge': '20',  // Space between edges
+  'elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',  // Better node placement
+  'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',  // Reduce edge crossings
+  'elk.edgeRouting': 'ORTHOGONAL',  // Orthogonal routing reduces overlaps
 };
 
 export async function getLayoutedElements(nodes: Node[], edges: Edge[]): Promise<{ nodes: Node[]; edges: Edge[] }> {

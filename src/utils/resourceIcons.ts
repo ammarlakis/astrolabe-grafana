@@ -1,9 +1,11 @@
+import { Kind } from "../constants";
+
 /**
  * Maps Kubernetes resource kinds to icon names
  * Using Grafana's icon system
  */
-export function getResourceIcon(kind: string): string {
-  const iconMap: Record<string, string> = {
+export function getResourceIcon(kind: Kind): string {
+  const iconMap: Record<Kind, string> = {
     // Workloads
     Pod: 'cube',                          // Single container unit
     Deployment: 'rocket',                 // Deploys and manages apps
@@ -40,6 +42,25 @@ export function getResourceIcon(kind: string): string {
 
   return iconMap[kind] || 'question-circle';
 }
+
+// /**
+//  * Get resource badge icon
+//  */
+// export function getResourceBadgeIcon(type: Kind): string {
+//   switch (type) {
+//     case 'replicaset': return 'layer-group';
+//     case 'pod': return 'cube';
+//     case 'endpointslice': return 'sitemap';
+//     case 'configmap': return 'file-alt';
+//     case 'secret': return 'key';
+//     case 'serviceaccount': return 'user';
+//     case 'pvc': return 'database';
+//     case 'pv': return 'hdd';
+//     case 'storageclass': return 'server';
+//     default: return 'question-circle';
+//   }
+// }
+
 
 /**
  * Gets a color for a resource kind (for visual grouping)

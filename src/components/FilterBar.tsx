@@ -5,8 +5,8 @@
 
 import React from 'react';
 import { css } from '@emotion/css';
-import { GrafanaTheme2, SelectableValue } from '@grafana/data';
-import { useStyles2, Select, Input, Stack, Icon, Checkbox, RadioButtonGroup } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { useStyles2, Combobox, ComboboxOption, Input, Stack, Icon, Checkbox, RadioButtonGroup } from '@grafana/ui';
 import { FilterState, ViewScope } from '../types';
 
 interface FilterBarProps {
@@ -14,8 +14,14 @@ interface FilterBarProps {
   onFiltersChange: (filters: FilterState) => void;
   viewScope: ViewScope;
   onViewScopeChange: (scope: ViewScope) => void;
-  kindOptions: Array<SelectableValue<string>>;
-  statusOptions: Array<SelectableValue<string>>;
+  kindOptions: Array<ComboboxOption<string>>;
+  statusOptions: Array<ComboboxOption<string>>;
+  namespaceOptions: Array<ComboboxOption<string>>;
+  releaseOptions: Array<ComboboxOption<string>>;
+  selectedNamespace?: string;
+  selectedRelease?: string;
+  onNamespaceChange: (namespace: string) => void;
+  onReleaseChange: (release: string) => void;
   resourceCount: number;
 }
 
@@ -41,6 +47,12 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   onViewScopeChange,
   kindOptions,
   statusOptions,
+  namespaceOptions,
+  releaseOptions,
+  selectedNamespace,
+  selectedRelease,
+  onNamespaceChange,
+  onReleaseChange,
   resourceCount,
 }) => {
   const styles = useStyles2(getStyles);
@@ -64,7 +76,36 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           onChange={(value) => onViewScopeChange(value as ViewScope)}
         />
 
-        <Select
+        {viewScope === 'namespace' && (
+          <Combobox
+            options={namespaceOptions}
+            value={selectedNamespace}
+            onChange={(v) => onNamespaceChange(v.value || '')}
+            width={25}
+            placeholder="Select namespace..."
+          />
+        )}
+
+        {viewScope === 'release' && (
+          <>
+            <Combobox
+              options={namespaceOptions}
+              value={selectedNamespace}
+              onChange={(v) => onNamespaceChange(v.value || '')}
+              width={20}
+              placeholder="Namespace (optional)"
+            />
+            <Combobox
+              options={releaseOptions}
+              value={selectedRelease}
+              onChange={(v) => onReleaseChange(v.value || '')}
+              width={25}
+              placeholder="Select release..."
+            />
+          </>
+        )}
+
+        <Combobox
           options={statusOptions}
           value={filters.statusFilter}
           onChange={(v) => handleFilterChange('statusFilter', v.value || 'all')}
@@ -72,7 +113,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           placeholder="Status"
         />
 
-        <Select
+        <Combobox
           options={kindOptions}
           value={filters.kindFilter}
           onChange={(v) => handleFilterChange('kindFilter', v.value || 'all')}

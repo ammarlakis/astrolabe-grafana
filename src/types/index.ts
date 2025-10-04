@@ -2,6 +2,8 @@
  * Core types for Astrolabe Kubernetes App Plugin
  */
 
+import { Kind } from "../constants";
+
 export type ViewScope = 'cluster' | 'namespace' | 'release';
 export type ResourceStatus = 'Ready' | 'Pending' | 'Error' | 'Unknown';
 export type EdgeType = 'owner' | 'selects' | 'backs' | 'ref' | 'scales' | 'routes' | 'binds' | 'mounts' | 'uses';
@@ -16,11 +18,11 @@ export interface K8sResource {
   gvk: {
     group: string;
     version: string;
-    kind: string;
+    kind: Kind;
   };
   name: string;
   namespace?: string;
-  kind: string;
+  kind: Kind;
   apiVersion: string;
   
   // Status and health
@@ -49,7 +51,7 @@ export interface K8sResource {
   replicasAvailable?: number;
   
   // Relationships
-  ownerReferences?: Array<{ uid: string; kind: string; name: string }>;
+  ownerReferences?: Array<{ uid: string; kind: Kind; name: string }>;
   
   // Storage
   volumeName?: string;
@@ -162,3 +164,25 @@ export interface FilterState {
   showProblemsOnly: boolean;
   showClusterScoped: boolean;
 }
+
+export interface ViewOptions {
+  showEndpointSlices: boolean;
+  showReplicaSets: boolean;
+  showNamespaceLanes: boolean;
+  bundleEdges: boolean;
+}
+
+export interface ResourceAttachments {
+  replicaSets?: K8sResource[];
+  pods?: K8sResource[];
+  endpointSlices?: K8sResource[];
+  configMaps?: K8sResource[];
+  secrets?: K8sResource[];
+  serviceAccounts?: K8sResource[];
+  pvcs?: K8sResource[];
+  pvs?: K8sResource[];
+  storageClasses?: K8sResource[];
+}
+
+// Map of resource UID to set of expanded attachment types
+export type ExpansionState = Map<string, Set<Kind>>;

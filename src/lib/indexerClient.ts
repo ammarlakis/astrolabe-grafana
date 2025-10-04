@@ -1,9 +1,11 @@
 /**
  * Client for kubernetes-state-server API
- * Handles HTTP requests and SSE/WebSocket connections
+ * Proxies requests through Grafana's backend
  */
 
-import { GraphSnapshot, ReleaseSummary, KindInfo, StreamMessage, ViewScope } from '../types';
+import { getBackendSrv } from '@grafana/runtime';
+import { firstValueFrom } from 'rxjs';
+import { GraphSnapshot, KindInfo, ViewScope, EdgeType } from '../types';
 
 export interface GraphParams {
   scope: ViewScope;
@@ -12,108 +14,184 @@ export interface GraphParams {
 }
 
 export class IndexerClient {
-  private baseUrl: string;
-  private streamUrl?: string;
+  private pluginId = 'ammarlakis-astrolabe-app';
 
-  constructor(baseUrl: string, streamUrl?: string) {
-    this.baseUrl = baseUrl.replace(/\/$/, ''); // Remove trailing slash
-    this.streamUrl = streamUrl || this.baseUrl;
+  constructor(pluginId?: string) {
+    if (pluginId) {
+      this.pluginId = pluginId;
+    }
+  }
+
+  /**
+   * Make a request through Grafana's backend proxy
+   */
+  private async fetchViaBackend(path: string, params?: Record<string, string>): Promise<any> {
+    const backendSrv = getBackendSrv();
+    const response = await firstValueFrom(backendSrv.fetch({
+      url: `/api/plugins/${this.pluginId}/resources${path}`,
+      method: 'GET',
+      params: params,
+    }));
+    return response?.data;
   }
 
   /**
    * List all namespaces
    */
   async listNamespaces(): Promise<string[]> {
-    const response = await fetch(`${this.baseUrl}/namespaces`);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch namespaces: ${response.statusText}`);
-    }
-    return response.json();
+    return this.fetchViaBackend('/namespaces');
   }
 
   /**
    * List all resource kinds
+   * Note: This endpoint doesn't exist in kubernetes-state-server yet
    */
   async listKinds(): Promise<KindInfo[]> {
-    const response = await fetch(`${this.baseUrl}/kinds`);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch kinds: ${response.statusText}`);
-    }
-    return response.json();
+    // TODO: Add this endpoint to kubernetes-state-server
+    // For now, return empty array
+    return [];
   }
 
   /**
    * List Helm releases
    */
-  async listReleases(ns?: string): Promise<ReleaseSummary[]> {
-    const url = ns ? `${this.baseUrl}/releases?ns=${ns}` : `${this.baseUrl}/releases`;
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch releases: ${response.statusText}`);
-    }
-    return response.json();
+  async listReleases(ns?: string): Promise<string[]> {
+    const params = ns ? { namespace: ns } : undefined;
+    return this.fetchViaBackend('/releases', params);
   }
 
   /**
    * Get graph snapshot
    */
   async getGraph(params: GraphParams): Promise<GraphSnapshot> {
-    const url = this.buildGraphUrl(params);
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch graph: ${response.statusText}`);
-    }
-    return response.json();
+    const queryParams = this.buildGraphParams(params);
+    const data = await this.fetchViaBackend('/graph', queryParams);
+    return this.convertToGraphSnapshot(data, params);
   }
 
   /**
    * Open SSE stream for live updates
+   * Note: SSE through backend proxy is complex, not implemented yet
    */
   openStream(params: GraphParams, since?: string): EventSource {
-    const url = this.buildStreamUrl(params, since);
-    return new EventSource(url);
+    throw new Error('SSE streaming not yet implemented through backend proxy');
   }
 
   /**
-   * Build graph URL with query parameters
+   * Build graph query parameters
+   * Maps our scope-based params to kubernetes-state-server's API
    */
-  private buildGraphUrl(params: GraphParams): string {
-    const query = new URLSearchParams();
-    query.set('scope', params.scope);
+  private buildGraphParams(params: GraphParams): Record<string, string> | undefined {
+    const queryParams: Record<string, string> = {};
 
-    if (params.scope === 'namespace' && params.namespaces) {
-      query.set('namespaces', params.namespaces.join(','));
+    if (params.scope === 'namespace' && params.namespaces && params.namespaces.length > 0) {
+      // For namespace scope, use the first namespace (server doesn't support multiple)
+      queryParams.namespace = params.namespaces[0];
     } else if (params.scope === 'release' && params.release) {
-      query.set('release', params.release);
+      queryParams.release = params.release;
     }
+    // For cluster scope, no parameters needed (returns all)
 
-    return `${this.baseUrl}/graph?${query.toString()}`;
+    return Object.keys(queryParams).length > 0 ? queryParams : undefined;
   }
 
   /**
-   * Build stream URL with query parameters
+   * Convert kubernetes-state-server response to our GraphSnapshot format
    */
-  private buildStreamUrl(params: GraphParams, since?: string): string {
-    const query = new URLSearchParams();
-    query.set('scope', params.scope);
+  private convertToGraphSnapshot(data: any, params: GraphParams): GraphSnapshot {
+    const nodes = data.nodes.map((node: any) => ({
+      uid: node.uid,
+      gvk: {
+        group: '',  // Not provided by server
+        version: '',
+        kind: node.kind,
+      },
+      name: node.name,
+      namespace: node.namespace,
+      kind: node.kind,
+      apiVersion: '',  // Not provided
+      status: node.status as any,
+      message: node.message,
+      labels: {},  // Not provided
+      chart: node.chart,
+      release: node.release,
+      age: node.metadata?.age,
+      creationTimestamp: node.metadata?.creationTimestamp,
+      image: node.metadata?.image,
+      nodeName: node.metadata?.nodeName,
+      restartCount: node.metadata?.restartCount,
+      replicasDesired: node.metadata?.replicas?.desired,
+      replicasCurrent: node.metadata?.replicas?.current,
+      replicasReady: node.metadata?.replicas?.ready,
+      replicasAvailable: node.metadata?.replicas?.available,
+      volumeName: node.metadata?.volumeName,
+      claimRef: node.metadata?.claimRef,
+      targetPods: node.metadata?.targetPods,
+      mountedPVCs: node.metadata?.mountedPVCs,
+      usedConfigMaps: node.metadata?.usedConfigMaps,
+      usedSecrets: node.metadata?.usedSecrets,
+      serviceAccountName: node.metadata?.serviceAccountName,
+      isClusterScoped: !node.namespace,
+    }));
 
-    if (params.scope === 'namespace' && params.namespaces) {
-      query.set('namespaces', params.namespaces.join(','));
-    } else if (params.scope === 'release' && params.release) {
-      query.set('release', params.release);
-    }
+    const edges = data.edges.map((edge: any) => ({
+      from: edge.from,
+      to: edge.to,
+      type: this.mapEdgeType(edge.type),
+    }));
 
-    if (since) {
-      query.set('since', since);
-    }
-
-    return `${this.streamUrl}/stream?${query.toString()}`;
+    return {
+      scope: params.scope,
+      scopeRef: {
+        namespaces: params.namespaces,
+        release: params.release,
+      },
+      rv: Date.now().toString(),  // Server doesn't provide rv yet
+      nodes,
+      edges,
+      stats: {
+        nodes: nodes.length,
+        edges: edges.length,
+        warnings: 0,
+        errors: nodes.filter((n: any) => n.status === 'Error').length,
+      },
+    };
   }
+
+  /**
+   * Map edge types from kubernetes-state-server to our format
+   */
+  private mapEdgeType(serverType: string): EdgeType {
+    const mapping: Record<string, EdgeType> = {
+      // Server's actual edge types
+      'owns': 'owner',
+      'uses-configmap': 'uses',
+      'uses-secret': 'uses',
+      'uses-sa': 'uses',
+      'mounts': 'mounts',
+      'endpoints': 'selects',
+      'selects': 'selects',
+      'backs': 'backs',
+      'routes-to': 'backs',
+      'routes': 'backs',
+      // Legacy mappings (in case server changes)
+      'ownership': 'owner',
+      'service-selector': 'selects',
+      'ingress-backend': 'backs',
+      'pod-volume': 'mounts',
+      'configmap-ref': 'uses',
+      'secret-ref': 'uses',
+      'service-account': 'uses',
+    };
+    return mapping[serverType] || 'ref';
+  }
+
 }
 
 /**
- * Create indexer client from app config
+ * Create indexer client
+ * No longer needs baseUrl since we proxy through Grafana backend
  */
-export function createIndexerClient(baseUrl: string = 'http://localhost:8080'): IndexerClient {
-  return new IndexerClient(baseUrl);
+export function createIndexerClient(): IndexerClient {
+  return new IndexerClient();
 }

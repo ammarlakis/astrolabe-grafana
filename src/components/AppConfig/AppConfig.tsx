@@ -3,41 +3,27 @@ import { lastValueFrom } from 'rxjs';
 import { css } from '@emotion/css';
 import { AppPluginMeta, GrafanaTheme2, PluginConfigPageProps, PluginMeta } from '@grafana/data';
 import { getBackendSrv } from '@grafana/runtime';
-import { Button, Field, FieldSet, Input, SecretInput, useStyles2 } from '@grafana/ui';
-import { testIds } from '../testIds';
+import { Button, Field, FieldSet, Input, useStyles2 } from '@grafana/ui';
 
-type AppPluginSettings = {
-  apiUrl?: string;
+export type AppPluginSettings = {
+  indexerUrl?: string;
 };
 
 type State = {
-  // The URL to reach our custom API.
-  apiUrl: string;
-  // Tells us if the API key secret is set.
-  isApiKeySet: boolean;
-  // A secret key for our custom API.
-  apiKey: string;
+  // The URL to reach the kubernetes-state-server indexer.
+  indexerUrl: string;
 };
 
 export interface AppConfigProps extends PluginConfigPageProps<AppPluginMeta<AppPluginSettings>> {}
 
 const AppConfig = ({ plugin }: AppConfigProps) => {
   const s = useStyles2(getStyles);
-  const { enabled, pinned, jsonData, secureJsonFields } = plugin.meta;
+  const { enabled, pinned, jsonData } = plugin.meta;
   const [state, setState] = useState<State>({
-    apiUrl: jsonData?.apiUrl || '',
-    apiKey: '',
-    isApiKeySet: Boolean(secureJsonFields?.apiKey),
+    indexerUrl: jsonData?.indexerUrl || '',
   });
 
-  const isSubmitDisabled = Boolean(!state.apiUrl || (!state.isApiKeySet && !state.apiKey));
-
-  const onResetApiKey = () =>
-    setState({
-      ...state,
-      apiKey: '',
-      isApiKeySet: false,
-    });
+  const isSubmitDisabled = Boolean(!state.indexerUrl);
 
   const onChange = (event: ChangeEvent<HTMLInputElement>) => {
     setState({
@@ -55,50 +41,31 @@ const AppConfig = ({ plugin }: AppConfigProps) => {
       enabled,
       pinned,
       jsonData: {
-        apiUrl: state.apiUrl,
+        indexerUrl: state.indexerUrl,
       },
-      // This cannot be queried later by the frontend.
-      // We don't want to override it in case it was set previously and left untouched now.
-      secureJsonData: state.isApiKeySet
-        ? undefined
-        : {
-            apiKey: state.apiKey,
-          },
     });
   };
 
   return (
     <form onSubmit={onSubmit}>
-      <FieldSet label="API Settings">
-        <Field label="API Key" description="A secret key for authenticating to our custom API">
-          <SecretInput
-            width={60}
-            id="config-api-key"
-            data-testid={testIds.appConfig.apiKey}
-            name="apiKey"
-            value={state.apiKey}
-            isConfigured={state.isApiKeySet}
-            placeholder={'Your secret API key'}
-            onChange={onChange}
-            onReset={onResetApiKey}
-          />
-        </Field>
-
-        <Field label="API Url" description="" className={s.marginTop}>
+      <FieldSet label="Kubernetes State Server Settings">
+        <Field 
+          label="Indexer URL" 
+          description="The URL of the kubernetes-state-server that provides the graph API"
+        >
           <Input
             width={60}
-            name="apiUrl"
-            id="config-api-url"
-            data-testid={testIds.appConfig.apiUrl}
-            value={state.apiUrl}
-            placeholder={`E.g.: http://mywebsite.com/api/v1`}
+            name="indexerUrl"
+            id="config-indexer-url"
+            value={state.indexerUrl}
+            placeholder="http://localhost:8080"
             onChange={onChange}
           />
         </Field>
 
         <div className={s.marginTop}>
-          <Button type="submit" data-testid={testIds.appConfig.submit} disabled={isSubmitDisabled}>
-            Save API settings
+          <Button type="submit" disabled={isSubmitDisabled}>
+            Save settings
           </Button>
         </div>
       </FieldSet>
