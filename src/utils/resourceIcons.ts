@@ -1,3 +1,4 @@
+import { IconName } from "@grafana/data";
 import { Kind } from "../types";
 
 /**
@@ -5,7 +6,7 @@ import { Kind } from "../types";
  * Using Grafana's icon system
  */
 export function getResourceIcon(kind: Kind): string {
-  const iconMap: Record<Kind, string> = {
+  const iconMap: Record<Kind, IconName> = {
     // Workloads
     Pod: 'cube',                          // Single container unit
     Deployment: 'rocket',                 // Deploys and manages apps
@@ -25,7 +26,7 @@ export function getResourceIcon(kind: Kind): string {
     // Config & Storage
     ConfigMap: 'file-alt',                // Configuration files
     Secret: 'key-skeleton-alt',           // Sensitive data
-    PersistentVolumeClaim: 'hdd',         // Storage request
+    PersistentVolumeClaim: 'database',         // Storage request
     PersistentVolume: 'database',         // Physical storage
     StorageClass: 'folder-open',          // Storage provisioner
     
@@ -38,34 +39,20 @@ export function getResourceIcon(kind: Kind): string {
     
     // Autoscaling
     HorizontalPodAutoscaler: 'arrows-h',  // Horizontal scaling
+    
+    // Other
+    PodDisruptionBudget: 'arrows-h',      // Pod disruption budget
+    VirtualService: 'exchange-alt',       // Virtual service
+    Gateway: 'exchange-alt',              // Gateway
   };
 
   return iconMap[kind] || 'question-circle';
 }
 
-// /**
-//  * Get resource badge icon
-//  */
-// export function getResourceBadgeIcon(type: Kind): string {
-//   switch (type) {
-//     case 'replicaset': return 'layer-group';
-//     case 'pod': return 'cube';
-//     case 'endpointslice': return 'sitemap';
-//     case 'configmap': return 'file-alt';
-//     case 'secret': return 'key';
-//     case 'serviceaccount': return 'user';
-//     case 'pvc': return 'database';
-//     case 'pv': return 'hdd';
-//     case 'storageclass': return 'server';
-//     default: return 'question-circle';
-//   }
-// }
-
-
 /**
  * Gets a color for a resource kind (for visual grouping)
  */
-export function getResourceKindColor(kind: string): string {
+export function getResourceKindColor(kind: Kind): string {
   const colorMap: Record<string, string> = {
     // Workloads - Blue shades
     Pod: '#5794F2',

@@ -5,7 +5,7 @@
  */
 
 import { Node, Edge } from '@xyflow/react';
-import { K8sResource } from '../types';
+import { K8sResource, Kind } from '../types';
 
 // Lane definitions (left to right)
 const LANES = {
@@ -15,52 +15,51 @@ const LANES = {
   EPHEMERAL: 4,      // ReplicaSet, Job
   POD: 5,            // Pods
   ATTACHMENT: 6,     // ConfigMap, Secret, PVC, etc. (side-band)
-  ORPHAN: 0,         // Disconnected resources
+  ORPHAN: 7,         // Disconnected resources
 } as const;
 
 // Node dimensions
 const NODE_WIDTH = 220;
 const NODE_HEIGHT = 100;
 const LANE_WIDTH = 300;
-const VERTICAL_SPACING = 150;
-const ATTACHMENT_OFFSET = 280; // Offset for side-band attachments
+const VERTICAL_SPACING = 100;
+const ATTACHMENT_OFFSET = 200; // Offset for side-band attachments
 
 /**
  * Determine which lane a resource belongs to
  */
 function getLane(resource: K8sResource): number {
-  const kind = resource.kind.toLowerCase();
   
   // Lane 1: Entry / L7
-  if (kind === 'ingress' || kind === 'gateway' || kind === 'virtualservice') {
+  if ([Kind.Ingress, Kind.Gateway, Kind.VirtualService].includes(resource.kind)) {
     return LANES.INGRESS;
   }
   
   // Lane 2: Service / L4
-  if (kind === 'service') {
+  if ([Kind.Service].includes(resource.kind)) {
     return LANES.SERVICE;
   }
   
   // Lane 3: Workload Controllers
-  if (['deployment', 'statefulset', 'daemonset', 'cronjob'].includes(kind)) {
+  if ([Kind.Deployment, Kind.StatefulSet, Kind.DaemonSet, Kind.CronJob].includes(resource.kind)) {
     return LANES.CONTROLLER;
   }
   
   // Lane 4: Ephemeral Workload
-  if (kind === 'replicaset' || kind === 'job') {
+  if ([Kind.ReplicaSet, Kind.Job, Kind.EndpointSlice].includes(resource.kind)) {
     return LANES.EPHEMERAL;
   }
   
   // Lane 5: Pods
-  if (kind === 'pod') {
+  if ([Kind.Pod].includes(resource.kind)) {
     return LANES.POD;
   }
   
   // Lane 6: Attachments (side-band)
-  if (['configmap', 'secret', 'serviceaccount', 'persistentvolumeclaim', 
-       'persistentvolume', 'storageclass', 'horizontalpodautoscaler', 
-       'poddisruptionbudget', 'networkpolicy', 'endpointslice',
-       'role', 'rolebinding', 'clusterrole', 'clusterrolebinding'].includes(kind)) {
+  if ([Kind.ConfigMap, Kind.Secret, Kind.ServiceAccount, Kind.PersistentVolumeClaim,
+       Kind.PersistentVolume, Kind.StorageClass, Kind.HorizontalPodAutoscaler, 
+       Kind.PodDisruptionBudget, Kind.NetworkPolicy, Kind.EndpointSlice,
+       Kind.Role, Kind.RoleBinding, Kind.ClusterRole, Kind.ClusterRoleBinding].includes(resource.kind)) {
     return LANES.ATTACHMENT;
   }
   
@@ -231,40 +230,4 @@ export async function getLaneLayoutedElements(
   }
   
   return { nodes: layoutedNodes, edges };
-}
-
-/**
- * Get lane name for display
- */
-export function getLaneName(lane: number): string {
-  switch (lane) {
-    case LANES.INGRESS: return 'Ingress / L7';
-    case LANES.SERVICE: return 'Service / L4';
-    case LANES.CONTROLLER: return 'Controllers';
-    case LANES.EPHEMERAL: return 'Ephemeral';
-    case LANES.POD: return 'Pods';
-    case LANES.ATTACHMENT: return 'Attachments';
-    case LANES.ORPHAN: return 'Orphans';
-    default: return 'Unknown';
-  }
-}
-
-/**
- * Check if a resource should be hidden by default
- */
-export function shouldHideByDefault(resource: K8sResource): boolean {
-  const kind = resource.kind.toLowerCase();
-  
-  // Hide EndpointSlice by default (derivable from Service)
-  if (kind === 'endpointslice') {
-    return true;
-  }
-  
-  // Optionally hide ReplicaSet (can be collapsed under Deployment)
-  // This would be controlled by a user preference
-  // if (kind === 'replicaset') {
-  //   return true;
-  // }
-  
-  return false;
 }

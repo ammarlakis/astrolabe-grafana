@@ -4,8 +4,9 @@
  */
 
 import { GrafanaTheme2 } from '@grafana/data';
+import { ResourceStatus } from '../types';
 
-export type ResourceStatus = 'Ready' | 'Error' | 'Pending' | 'Unknown';
+// export type ResourceStatus = 'Ready' | 'Error' | 'Pending' | 'Unknown';
 
 export interface StatusColors {
   background: string;
@@ -63,33 +64,33 @@ export function getStatusColors(status: ResourceStatus, theme?: GrafanaTheme2): 
 /**
  * Gets a simple status color (for icons, badges, etc.)
  */
-export function getStatusColor(status: ResourceStatus): string {
-  switch (status) {
-    case 'Ready':
-      return '#4CAF50';
-    case 'Error':
-      return '#F44336';
-    case 'Pending':
-      return '#FF9800';
-    case 'Unknown':
-    default:
-      return '#9E9E9E';
-  }
-}
+// export function getStatusColor(status: ResourceStatus): string {
+//   switch (status) {
+//     case 'Ready':
+//       return '#4CAF50';
+//     case 'Error':
+//       return '#F44336';
+//     case 'Pending':
+//       return '#FF9800';
+//     case 'Unknown':
+//     default:
+//       return '#9E9E9E';
+//   }
+// }
 
 /**
  * Gets a status icon name
  */
-export function getStatusIcon(status: ResourceStatus): string {
-  switch (status) {
-    case 'Ready':
-      return 'check-circle';
-    case 'Error':
-      return 'exclamation-circle';
-    case 'Pending':
-      return 'clock-nine';
-    case 'Unknown':
-    default:
-      return 'question-circle';
-  }
-}
+// export function getStatusIcon(status: ResourceStatus): string {
+//   switch (status) {
+//     case 'Ready':
+//       return 'check-circle';
+//     case 'Error':
+//       return 'exclamation-circle';
+//     case 'Pending':
+//       return 'clock-nine';
+//     case 'Unknown':
+//     default:
+//       return 'question-circle';
+//   }
+// }

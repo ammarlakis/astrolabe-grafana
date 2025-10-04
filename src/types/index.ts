@@ -26,6 +26,9 @@ export enum Kind {
   PersistentVolumeClaim = 'PersistentVolumeClaim',
   PersistentVolume = 'PersistentVolume',
   StorageClass = 'StorageClass',
+  PodDisruptionBudget = 'PodDisruptionBudget',
+  VirtualService = 'VirtualService',
+  Gateway = 'Gateway',
 }
 
 export enum ViewScope {
