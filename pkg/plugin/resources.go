@@ -8,7 +8,7 @@ import (
 	"github.com/grafana/grafana-plugin-sdk-go/backend/log"
 )
 
-// proxyToIndexer forwards requests to the kubernetes-state-server
+// proxyToIndexer forwards requests to the astrolabe server
 func (a *App) proxyToIndexer(w http.ResponseWriter, req *http.Request, path string) {
 	// Get indexer URL from plugin settings
 	indexerURL := a.getIndexerURL(req)
@@ -41,7 +41,7 @@ func (a *App) proxyToIndexer(w http.ResponseWriter, req *http.Request, path stri
 	resp, err := client.Do(proxyReq)
 	if err != nil {
 		log.DefaultLogger.Error("Failed to proxy request", "error", err)
-		http.Error(w, fmt.Sprintf("Failed to connect to kubernetes-state-server: %v", err), http.StatusBadGateway)
+		http.Error(w, fmt.Sprintf("Failed to connect to astrolabe server: %v", err), http.StatusBadGateway)
 		return
 	}
 	defer resp.Body.Close()

@@ -208,7 +208,7 @@ jobs:
       - name: Docker logs
         if: ${{ always() && steps.run-tests.outcome == 'failure' }}
         run: |
-          docker logs ammarlakis-astrolabe-app >& grafana-server.log
+          docker logs astrolabe-astrolabe-app >& grafana-server.log
 
       - name: Stop grafana docker
         run: docker compose down

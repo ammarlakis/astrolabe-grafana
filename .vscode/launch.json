@@ -19,13 +19,7 @@
       "host": "127.0.0.1",
       "showLog": true,
       "trace": "log",
-      "logOutput": "rpc",
-      "substitutePath": [
-        {
-          "from": "${workspaceFolder}",
-          "to": "/root/ammarlakis-astrolabe-app"
-        }
-      ]
+      "logOutput": "rpc"
     }
   ]
 }

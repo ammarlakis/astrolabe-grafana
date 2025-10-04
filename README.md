@@ -1,136 +1,151 @@
-# Grafana app plugin template
+# Astrolabe Grafana App
 
-This template is a starting point for building an app plugin for Grafana.
+Interactive Kubernetes resource topology and relationship visualizer for Grafana.
 
-## What are Grafana app plugins?
+## Overview
 
-App plugins can let you create a custom out-of-the-box monitoring experience by custom pages, nested data sources and panel plugins.
+Astrolabe is a Grafana app plugin that visualizes Kubernetes resources and their relationships as an interactive graph. It connects to the [Astrolabe Server](https://github.com/ammarlakis/astrolabe-server) to provide real-time topology views of your cluster.
 
-## Get started
+## Features
 
-### Backend
+- **Interactive Graph Visualization**: Explore Kubernetes resources with an interactive force-directed graph using React Flow
+- **Multiple View Scopes**: Switch between cluster-wide, namespace, or Helm release views
+- **Smart Resource Grouping**: Automatically groups related resources (Pods under Deployments, etc.)
+- **Expandable Attachments**: Click to expand/collapse related resources like ReplicaSets, Pods, ConfigMaps
+- **Status Indicators**: Visual health status for all resources (Ready, Pending, Error)
+- **Advanced Filtering**: Filter by resource kind, status, or search by name
+- **Helm-Aware**: First-class support for Helm releases and charts
+- **Cluster-Scoped Resources**: Handles both namespaced and cluster-scoped resources (PVs, StorageClasses)
 
-1. Update [Grafana plugin SDK for Go](https://grafana.com/developers/plugin-tools/key-concepts/backend-plugins/grafana-plugin-sdk-for-go) dependency to the latest minor version:
+## Requirements
 
-   ```bash
-   go get -u github.com/grafana/grafana-plugin-sdk-go
-   go mod tidy
-   ```
+- Grafana 10.4.0 or later
+- [Astrolabe Server](https://github.com/ammarlakis/astrolabe-server) deployed and accessible by grafana
+- Node.js 22+ (for development)
 
-2. Build plugin backend binaries for Linux, Windows and Darwin:
+## Installation
 
-   ```bash
-   mage -v
-   ```
+### From Grafana Catalog (Coming Soon)
 
-3. List all available Mage targets for additional commands:
+1. Navigate to **Configuration** → **Plugins** in Grafana
+2. Search for "Astrolabe"
+3. Click **Install**
 
-   ```bash
-   mage -l
-   ```
+### Manual Installation
 
-### Frontend
+1. Download the latest release from the [releases page](https://github.com/ammarlakis/astrolabe-app/releases)
+2. Extract to your Grafana plugins directory
+3. Restart Grafana
+4. Enable the plugin in **Configuration** → **Plugins**
 
-1. Install dependencies
+## Configuration
 
-   ```bash
-   npm install
-   ```
+1. Navigate to **Apps** → **Astrolabe** → **Configuration**
+2. Enter your Astrolabe Server URL (e.g., `http://astrolabe.astrolabe-system.svc.cluster.local:8080`)
+3. Save the configuration
 
-2. Build plugin in development mode and run in watch mode
+The app proxies all requests through Grafana's backend, so no direct network access from the browser is required.
 
-   ```bash
-   npm run dev
-   ```
+## Usage
 
-3. Build plugin in production mode
+### Graph View
 
-   ```bash
-   npm run build
-   ```
+1. Navigate to **Apps** → **Astrolabe** → **Graph**
+2. Select your view scope:
+   - **Cluster**: View all resources across the cluster
+   - **Namespace**: Filter to a specific namespace
+   - **Release**: View resources for a specific Helm release
+3. Use filters to narrow down resources by kind, status, or name
+4. Click on nodes to expand/collapse related resources
+5. Drag nodes to rearrange the layout
 
-4. Run the tests (using Jest)
+### Resource Types
 
-   ```bash
-   # Runs the tests and watches for changes, requires git init first
-   npm run test
+Supported Kubernetes resources:
+- **Workloads**: Deployments, StatefulSets, DaemonSets, ReplicaSets, Jobs, CronJobs, Pods
+- **Networking**: Services, Ingresses, EndpointSlices
+- **Configuration**: ConfigMaps, Secrets, ServiceAccounts
+- **Storage**: PersistentVolumeClaims, PersistentVolumes, StorageClasses
+- **Autoscaling**: HorizontalPodAutoscalers
 
-   # Exits after running all the tests
-   npm run test:ci
-   ```
+## Development
 
-5. Spin up a Grafana instance and run the plugin inside it (using Docker)
+### Setup
 
-   ```bash
-   npm run server
-   ```
+```bash
+# Install dependencies
+npm install
 
-6. Run the E2E tests (using Playwright)
+# Build backend
+mage -v
 
-   ```bash
-   # Spins up a Grafana instance first that we tests against
-   npm run server
+# Run in development mode
+npm run dev
 
-   # If you wish to start a certain Grafana version. If not specified will use latest by default
-   GRAFANA_VERSION=11.3.0 npm run server
+# Start Grafana with the plugin
+npm run server
+```
 
-   # Starts the tests
-   npm run e2e
-   ```
+### Testing
 
-7. Run the linter
+```bash
+# Run unit tests
+npm run test
 
-   ```bash
-   npm run lint
+# Run E2E tests
+npm run e2e
+```
 
-   # or
+### Building
 
-   npm run lint:fix
-   ```
+```bash
+# Production build
+npm run build
 
-# Distributing your plugin
+# Sign plugin (requires GRAFANA_API_KEY)
+npm run sign
+```
 
-When distributing a Grafana plugin either within the community or privately the plugin must be signed so the Grafana application can verify its authenticity. This can be done with the `@grafana/sign-plugin` package.
+## Architecture
 
-_Note: It's not necessary to sign a plugin during development. The docker development environment that is scaffolded with `@grafana/create-plugin` caters for running the plugin without a signature._
+```
+┌─────────────┐
+│   Grafana   │
+│  (Browser)  │
+└──────┬──────┘
+       │
+       │ HTTP API
+       │
+┌──────▼──────────┐
+│ Astrolabe App   │
+│   (Plugin)      │
+└──────┬──────────┘
+       │
+       │ Backend Proxy
+       │
+┌──────▼──────────┐
+│ Astrolabe Server│
+│  (In-Cluster)   │
+└──────┬──────────┘
+       │
+       │ Watch API
+       │
+┌──────▼──────────┐
+│   Kubernetes    │
+│     Cluster     │
+└─────────────────┘
+```
 
-## Initial steps
+## License
 
-Before signing a plugin please read the Grafana [plugin publishing and signing criteria](https://grafana.com/legal/plugins/#plugin-publishing-and-signing-criteria) documentation carefully.
+Licensed under the [GNU Affero General Public License v3.0 (AGPLv3)](LICENSE).
 
-`@grafana/create-plugin` has added the necessary commands and workflows to make signing and distributing a plugin via the grafana plugins catalog as straightforward as possible.
+## Contributing
 
-Before signing a plugin for the first time please consult the Grafana [plugin signature levels](https://grafana.com/legal/plugins/#what-are-the-different-classifications-of-plugins) documentation to understand the differences between the types of signature level.
+Contributions are welcome! Please:
 
-1. Create a [Grafana Cloud account](https://grafana.com/signup).
-2. Make sure that the first part of the plugin ID matches the slug of your Grafana Cloud account.
-   - _You can find the plugin ID in the `plugin.json` file inside your plugin directory. For example, if your account slug is `acmecorp`, you need to prefix the plugin ID with `acmecorp-`._
-3. Create a Grafana Cloud API key with the `PluginPublisher` role.
-4. Keep a record of this API key as it will be required for signing a plugin
-
-## Signing a plugin
-
-### Using Github actions release workflow
-
-If the plugin is using the github actions supplied with `@grafana/create-plugin` signing a plugin is included out of the box. The [release workflow](./.github/workflows/release.yml) can prepare everything to make submitting your plugin to Grafana as easy as possible. Before being able to sign the plugin however a secret needs adding to the Github repository.
-
-1. Please navigate to "settings > secrets > actions" within your repo to create secrets.
-2. Click "New repository secret"
-3. Name the secret "GRAFANA_API_KEY"
-4. Paste your Grafana Cloud API key in the Secret field
-5. Click "Add secret"
-
-#### Push a version tag
-
-To trigger the workflow we need to push a version tag to github. This can be achieved with the following steps:
-
-1. Run `npm version <major|minor|patch>`
-2. Run `git push origin main --follow-tags`
-
-## Learn more
-
-Below you can find source code for existing app plugins and other related documentation.
-
-- [Basic app plugin example](https://github.com/grafana/grafana-plugin-examples/tree/master/examples/app-basic#readme)
-- [`plugin.json` documentation](https://grafana.com/developers/plugin-tools/reference/plugin-jsonplugin-json)
-- [Sign a plugin](https://grafana.com/developers/plugin-tools/publish-a-plugin/sign-a-plugin)
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request

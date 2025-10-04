@@ -14,7 +14,7 @@ export interface GraphParams {
 }
 
 export class IndexerClient {
-  private pluginId = 'ammarlakis-astrolabe-app';
+  private pluginId = 'astrolabe-astrolabe-app';
 
   constructor(pluginId?: string) {
     if (pluginId) {

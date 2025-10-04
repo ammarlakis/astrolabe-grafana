@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
   "type": "app",
   "name": "Astrolabe",
-  "id": "ammarlakis-astrolabe-app",
+  "id": "astrolabe-astrolabe-app",
   "backend": true,
   "executable": "gpx_astrolabe",
   "info": {

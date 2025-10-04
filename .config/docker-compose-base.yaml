@@ -1,7 +1,7 @@
 services:
   grafana:
     user: root
-    container_name: 'ammarlakis-astrolabe-app'
+    container_name: 'astrolabe-astrolabe-app'
 
     build:
       context: .
@@ -19,13 +19,13 @@ services:
     cap_add:
       - SYS_PTRACE
     volumes:
-      - ../dist:/var/lib/grafana/plugins/ammarlakis-astrolabe-app
+      - ../dist:/var/lib/grafana/plugins/astrolabe-astrolabe-app
       - ../provisioning:/etc/grafana/provisioning
-      - ..:/root/ammarlakis-astrolabe-app
+      - ..:/root/astrolabe-astrolabe-app
 
     environment:
       NODE_ENV: development
-      GF_LOG_FILTERS: plugin.ammarlakis-astrolabe-app:debug
+      GF_LOG_FILTERS: plugin.astrolabe-astrolabe-app:debug
       GF_LOG_LEVEL: debug
       GF_DATAPROXY_LOGGING: 1
-      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: ammarlakis-astrolabe-app
+      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: astrolabe-astrolabe-app
