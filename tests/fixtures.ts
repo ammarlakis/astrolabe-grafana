@@ -1,5 +1,5 @@
 import { AppConfigPage, AppPage, test as base } from '@grafana/plugin-e2e';
-import pluginJson from '../src/plugin.json';
+import { PLUGIN_ID } from '../src/constants';
 
 type AppTestFixture = {
   appConfigPage: AppConfigPage;
@@ -9,7 +9,7 @@ type AppTestFixture = {
 export const test = base.extend<AppTestFixture>({
   appConfigPage: async ({ gotoAppConfigPage }, use) => {
     const configPage = await gotoAppConfigPage({
-      pluginId: pluginJson.id,
+      pluginId: PLUGIN_ID,
     });
     await use(configPage);
   },
@@ -17,7 +17,7 @@ export const test = base.extend<AppTestFixture>({
     await use((path) =>
       gotoAppPage({
         path,
-        pluginId: pluginJson.id,
+        pluginId: PLUGIN_ID,
       })
     );
   },

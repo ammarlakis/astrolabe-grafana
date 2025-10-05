@@ -10,7 +10,6 @@ export type AppPluginSettings = {
 };
 
 type State = {
-  // The URL to reach the kubernetes-state-server indexer.
   indexerUrl: string;
 };
 
@@ -48,10 +47,10 @@ const AppConfig = ({ plugin }: AppConfigProps) => {
 
   return (
     <form onSubmit={onSubmit}>
-      <FieldSet label="Kubernetes State Server Settings">
+      <FieldSet label="Astrolabe Settings">
         <Field 
           label="Indexer URL" 
-          description="The URL of the kubernetes-state-server that provides the graph API"
+          description="The URL of the Astrolabe server that provides the graph API"
         >
           <Input
             width={60}

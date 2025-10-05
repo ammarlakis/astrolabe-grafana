@@ -103,7 +103,7 @@ func (a *App) handlePing(w http.ResponseWriter, req *http.Request) {
 
 // registerRoutes takes a *http.ServeMux and registers some HTTP handlers.
 func (a *App) registerRoutes(mux *http.ServeMux) {
-	// Kubernetes state server proxy endpoints
+	// Astrolabe server proxy endpoints
 	mux.HandleFunc("/namespaces", a.handleNamespaces)
 	mux.HandleFunc("/releases", a.handleReleases)
 	mux.HandleFunc("/graph", a.handleGraph)

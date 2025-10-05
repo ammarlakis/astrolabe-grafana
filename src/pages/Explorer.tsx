@@ -225,7 +225,7 @@ export default function Explorer() {
         <div>
           <h2>Error loading graph</h2>
           <p>{error}</p>
-          <p>Make sure the kubernetes-state-server is accessible from Grafana&apos;s backend.</p>
+          <p>Make sure the Astrolabe server is accessible from Grafana&apos;s backend.</p>
           <p>The backend proxies requests to http://astrolabe:8080 by default.</p>
         </div>
       </PluginPage>

@@ -1,11 +1,12 @@
 /**
- * Client for kubernetes-state-server API
+ * Client for Astrolabe API
  * Proxies requests through Grafana's backend
  */
 
 import { getBackendSrv } from '@grafana/runtime';
 import { firstValueFrom } from 'rxjs';
 import { GraphSnapshot, KindInfo, ViewScope, EdgeType } from '../types';
+import { PLUGIN_ID } from '../constants';
 
 export interface GraphParams {
   scope: ViewScope;
@@ -14,12 +15,7 @@ export interface GraphParams {
 }
 
 export class IndexerClient {
-  private pluginId = 'astrolabe-astrolabe-app';
-
-  constructor(pluginId?: string) {
-    if (pluginId) {
-      this.pluginId = pluginId;
-    }
+  constructor() {
   }
 
   /**
@@ -28,7 +24,7 @@ export class IndexerClient {
   private async fetchViaBackend(path: string, params?: Record<string, string>): Promise<any> {
     const backendSrv = getBackendSrv();
     const response = await firstValueFrom(backendSrv.fetch({
-      url: `/api/plugins/${this.pluginId}/resources${path}`,
+      url: `/api/plugins/${PLUGIN_ID}/resources${path}`,
       method: 'GET',
       params: params,
     }));
@@ -44,10 +40,10 @@ export class IndexerClient {
 
   /**
    * List all resource kinds
-   * Note: This endpoint doesn't exist in kubernetes-state-server yet
+   * Note: This endpoint doesn't exist in Astrolabe yet
    */
   async listKinds(): Promise<KindInfo[]> {
-    // TODO: Add this endpoint to kubernetes-state-server
+    // TODO: Add this endpoint to Astrolabe
     // For now, return empty array
     return [];
   }
@@ -79,7 +75,7 @@ export class IndexerClient {
 
   /**
    * Build graph query parameters
-   * Maps our scope-based params to kubernetes-state-server's API
+   * Maps our scope-based params to Astrolabe's API
    */
   private buildGraphParams(params: GraphParams): Record<string, string> | undefined {
     const queryParams: Record<string, string> = {};
@@ -96,7 +92,7 @@ export class IndexerClient {
   }
 
   /**
-   * Convert kubernetes-state-server response to our GraphSnapshot format
+   * Convert Astrolabe response to our GraphSnapshot format
    */
   private convertToGraphSnapshot(data: any, params: GraphParams): GraphSnapshot {
     const nodes = data.nodes.map((node: any) => ({
@@ -159,7 +155,7 @@ export class IndexerClient {
   }
 
   /**
-   * Map edge types from kubernetes-state-server to our format
+   * Map edge types from Astrolabe to our format
    */
   private mapEdgeType(serverType: string): EdgeType {
     const mapping: Record<string, EdgeType> = {
@@ -186,12 +182,4 @@ export class IndexerClient {
     return mapping[serverType] || EdgeType.Ref;
   }
 
-}
-
-/**
- * Create indexer client
- * No longer needs baseUrl since we proxy through Grafana backend
- */
-export function createIndexerClient(): IndexerClient {
-  return new IndexerClient();
 }
