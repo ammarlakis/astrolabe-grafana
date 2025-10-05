@@ -69,19 +69,3 @@ export async function getLayoutedElements(nodes: Node[], edges: Edge[]): Promise
     return { nodes: layoutedNodes, edges };
   }
 }
-
-/**
- * Synchronous version that returns the input (for immediate rendering)
- * Actual layout will be applied asynchronously
- */
-export function getLayoutedElementsSync(nodes: Node[], edges: Edge[]): { nodes: Node[]; edges: Edge[] } {
-  // Simple grid layout as fallback
-  const layoutedNodes = nodes.map((node, idx) => ({
-    ...node,
-    position: {
-      x: (idx % 5) * 250,
-      y: Math.floor(idx / 5) * 150,
-    },
-  }));
-  return { nodes: layoutedNodes, edges };
-}

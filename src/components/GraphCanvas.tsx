@@ -21,7 +21,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { K8sResource, K8sEdge, ResourceAttachments, ExpansionState, Kind } from '../types';
 import { GraphNode } from './GraphNode';
-import { getLaneLayoutedElements } from '../lib/laneLayout';
+import { getLayoutedElements } from '../lib/layout';
 import { SmartBezierEdge } from '@tisoap/react-flow-smart-edge';
 
 interface GraphCanvasProps {
@@ -131,7 +131,7 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
         return;
       }
 
-      const { nodes: layoutedNodes, edges: layoutedEdges } = await getLaneLayoutedElements(
+      const { nodes: layoutedNodes, edges: layoutedEdges } = await getLayoutedElements(
         initialNodes,
         initialEdges
       );
