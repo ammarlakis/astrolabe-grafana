@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { css } from '@emotion/css';
 import { GrafanaTheme2, PageLayoutType } from '@grafana/data';
-import { PluginPage } from '@grafana/runtime';
+import { PluginPage, locationService } from '@grafana/runtime';
 import { useStyles2, LoadingPlaceholder } from '@grafana/ui';
 import { GraphCanvas } from '../components/GraphCanvas';
 import { FilterBar } from '../components/FilterBar';
@@ -32,24 +32,73 @@ const getStyles = (theme: GrafanaTheme2) => ({
 });
 
 export default function Explorer() {
+  // Get query params from URL
+  const queryParams = locationService.getSearch();
+  const params = {
+    scope: queryParams.get('scope') || undefined,
+    namespace: queryParams.get('namespace') || undefined,
+    release: queryParams.get('release') || undefined,
+    status: queryParams.get('status') || undefined,
+    kind: queryParams.get('kind') || undefined,
+    search: queryParams.get('search') || undefined,
+    showProblemsOnly: queryParams.get('showProblemsOnly') || undefined,
+    showClusterScoped: queryParams.get('showClusterScoped') || undefined,
+  };
   const styles = useStyles2(getStyles);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [resources, setResources] = useState<K8sResource[]>([]);
   const [edges, setEdges] = useState<K8sEdge[]>([]);
-  const [viewScope, setViewScope] = useState<ViewScope>(ViewScope.Cluster);
+  const [viewScope, setViewScope] = useState<ViewScope>((params.scope as ViewScope) || ViewScope.Cluster);
   const [namespaces, setNamespaces] = useState<string[]>([]);
   const [releases, setReleases] = useState<string[]>([]);
-  const [selectedNamespace, setSelectedNamespace] = useState<string>('');
-  const [selectedRelease, setSelectedRelease] = useState<string>('');
+  const [selectedNamespace, setSelectedNamespace] = useState<string>(params.namespace || '');
+  const [selectedRelease, setSelectedRelease] = useState<string>(params.release || '');
   const [filters, setFilters] = useState<FilterState>({
-    statusFilter: 'all',
-    kindFilter: 'all',
-    searchQuery: '',
-    showProblemsOnly: false,
-    showClusterScoped: true,
+    statusFilter: params.status || 'all',
+    kindFilter: params.kind || 'all',
+    searchQuery: params.search || '',
+    showProblemsOnly: params.showProblemsOnly === 'true',
+    showClusterScoped: params.showClusterScoped === 'true',
   });
   const [expansionState, setExpansionState] = useState<ExpansionState>(new Map());
+
+  // Update URL when state changes
+  useEffect(() => {
+    const newParams = new URLSearchParams();
+    
+    if (viewScope) {
+      newParams.set('scope', viewScope);
+    }
+    if (selectedNamespace) {
+      newParams.set('namespace', selectedNamespace);
+    }
+    if (selectedRelease) {
+      newParams.set('release', selectedRelease);
+    }
+    if (filters.statusFilter && filters.statusFilter !== 'all') {
+      newParams.set('status', filters.statusFilter);
+    }
+    if (filters.kindFilter && filters.kindFilter !== 'all') {
+      newParams.set('kind', filters.kindFilter);
+    }
+    if (filters.searchQuery) {
+      newParams.set('search', filters.searchQuery);
+    }
+    if (filters.showProblemsOnly) {
+      newParams.set('showProblemsOnly', 'true');
+    }
+    if (!filters.showClusterScoped) {
+      newParams.set('showClusterScoped', 'false');
+    }
+    
+    // Update URL without reloading
+    const newSearch = newParams.toString();
+    const currentSearch = locationService.getSearch().toString();
+    if (newSearch !== currentSearch) {
+      locationService.replace({ search: newSearch });
+    }
+  }, [viewScope, selectedNamespace, selectedRelease, filters]);
 
   // Load namespaces and releases on mount
   useEffect(() => {
