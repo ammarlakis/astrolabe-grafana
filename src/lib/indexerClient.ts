@@ -15,7 +15,13 @@ export interface GraphParams {
 }
 
 export class IndexerClient {
-  constructor() {
+  private static instance: IndexerClient | null = null;
+
+  static getInstance(): IndexerClient {
+    if (!IndexerClient.instance) {
+      IndexerClient.instance = new IndexerClient();
+    }
+    return IndexerClient.instance;
   }
 
   /**

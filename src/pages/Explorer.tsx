@@ -9,7 +9,7 @@ import { PluginPage } from '@grafana/runtime';
 import { useStyles2, LoadingPlaceholder } from '@grafana/ui';
 import { GraphCanvas } from '../components/GraphCanvas';
 import { FilterBar } from '../components/FilterBar';
-import { createIndexerClient } from '../lib/indexerClient';
+import { IndexerClient } from '../lib/indexerClient';
 import { K8sResource, K8sEdge, FilterState, ViewScope, ExpansionState, Kind } from '../types';
 import { computeAllAttachments, filterVisibleResources, simplifyEdges } from '../lib/attachments';
 
@@ -55,7 +55,7 @@ export default function Explorer() {
   useEffect(() => {
     const loadOptions = async () => {
       try {
-        const client = createIndexerClient();
+        const client = IndexerClient.getInstance();
         const [ns, rel] = await Promise.all([
           client.listNamespaces(),
           client.listReleases(),
@@ -76,7 +76,7 @@ export default function Explorer() {
         setLoading(true);
         setError(null);
 
-        const client = createIndexerClient();
+        const client = IndexerClient.getInstance();
         const graph = await client.getGraph({
           scope: viewScope,
           namespaces: selectedNamespace ? [selectedNamespace] : undefined,
