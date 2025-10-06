@@ -6,6 +6,9 @@ Interactive Kubernetes resource topology and relationship visualizer for Grafana
 
 Astrolabe is a Grafana app plugin that visualizes Kubernetes resources and their relationships as an interactive graph. It connects to the [Astrolabe Server](https://github.com/ammarlakis/astrolabe-server) to provide real-time topology views of your cluster.
 
+
+![Astrolabe Grafana App](Screenshot.png)
+
 ## Features
 
 - **Interactive Graph Visualization**: Explore Kubernetes resources with an interactive force-directed graph using React Flow
